@@ -1,0 +1,61 @@
+# Copyright 2018-2021 the original author or authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+api = "0.7"
+
+[buildpack]
+  description = "A Cloud Native Buildpack that provides the JAttach binary"
+  homepage = "https://github.com/paketo-buildpacks/jattach"
+  id = "paketo-buildpacks/jattach"
+  keywords = ["jattach", "java"]
+  name = "Paketo JAttach Buildpack"
+  sbom-formats = ["application/vnd.syft+json", "application/vnd.cyclonedx+json"]
+  version = "1.0.0"
+
+  [[buildpack.licenses]]
+    type = "Apache-2.0"
+    uri = "https://github.com/paketo-buildpacks/jattach/blob/main/LICENSE"
+
+[metadata]
+  include-files = ["LICENSE", "NOTICE", "README.md", "bin/build", "bin/detect", "bin/main", "buildpack.toml"]
+  pre-package = "scripts/build.sh"
+
+  [[metadata.configurations]]
+    build = true
+    default = "false"
+    description = "whether to contribute the JAttach binary at build time"
+    name = "BP_JATTACH_ENABLED"
+
+  [[metadata.dependencies]]
+    cpes = ["cpe:2.3:a:apangin:jattach:2.0.0:*:*:*:*:*:*:*"]
+    id = "jattach"
+    name = "JAttach"
+    purl = "pkg:generic/jattach@2.0.0?arch=amd64"
+    sha256 = "989dc53279c7fb3ec399dbff1692647439286e5a4339c2849fd4323e998af7f8"
+    stacks = ["io.buildpacks.stacks.bionic", "io.paketo.stacks.tiny", "*"]
+    uri = "https://github.com/apangin/jattach/releases/download/v2.0/jattach"
+    version = "2.0.0"
+
+    [[metadata.dependencies.licenses]]
+      type = "Apache-2.0"
+      uri = "https://github.com/apangin/jattach/blob/master/LICENSE"
+
+[[stacks]]
+  id = "io.buildpacks.stacks.bionic"
+
+[[stacks]]
+  id = "io.paketo.stacks.tiny"
+
+[[stacks]]
+  id = "*"

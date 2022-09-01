@@ -1,0 +1,72 @@
+# Copyright 2018-2020 the original author or authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+api = "0.7"
+
+[buildpack]
+  description = "A Cloud Native Buildpack that builds SBT-based applications from source"
+  homepage = "https://github.com/paketo-buildpacks/sbt"
+  id = "paketo-buildpacks/sbt"
+  keywords = ["java", "sbt", "scala", "build-system"]
+  name = "Paketo SBT Buildpack"
+  sbom-formats = ["application/vnd.cyclonedx+json", "application/vnd.syft+json"]
+  version = "6.4.0"
+
+  [[buildpack.licenses]]
+    type = "Apache-2.0"
+    uri = "https://github.com/paketo-buildpacks/sbt/blob/main/LICENSE"
+
+[metadata]
+  include-files = ["LICENSE", "NOTICE", "README.md", "bin/build", "bin/detect", "bin/main", "buildpack.toml"]
+  pre-package = "scripts/build.sh"
+
+  [[metadata.configurations]]
+    build = true
+    default = "universal:packageBin"
+    description = "the arguments to pass to Maven"
+    name = "BP_SBT_BUILD_ARGUMENTS"
+
+  [[metadata.configurations]]
+    build = true
+    default = "target/universal/*.zip"
+    description = "the built application artifact explicitly.  Supersedes $BP_SBT_BUILT_MODULE"
+    name = "BP_SBT_BUILT_ARTIFACT"
+
+  [[metadata.configurations]]
+    build = true
+    description = "the module to find application artifact in"
+    name = "BP_SBT_BUILT_MODULE"
+
+  [[metadata.dependencies]]
+    cpes = ["cpe:2.3:a:lightbend:sbt:1.6.2:*:*:*:*:*:*:*"]
+    id = "sbt"
+    name = "Scala SBT"
+    purl = "pkg:generic/sbt@1.6.2"
+    sha256 = "637637b6c4e6fa04ab62cd364061e32b12480b09001cd23303df62b36fadd440"
+    stacks = ["io.buildpacks.stacks.bionic", "io.paketo.stacks.tiny", "*"]
+    uri = "https://github.com/sbt/sbt/releases/download/v1.6.2/sbt-1.6.2.tgz"
+    version = "1.6.2"
+
+    [[metadata.dependencies.licenses]]
+      type = "Apache-2.0"
+      uri = "https://github.com/sbt/sbt/blob/develop/LICENSE"
+
+[[stacks]]
+  id = "io.buildpacks.stacks.bionic"
+
+[[stacks]]
+  id = "io.paketo.stacks.tiny"
+
+[[stacks]]
+  id = "*"
