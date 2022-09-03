@@ -37,16 +37,16 @@ ARG build_id=0
 RUN echo \${build_id}
 
 RUN microdnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y ${PACKAGES} && microdnf clean all
-
-RUN echo "CNB_PLATFORM_API: ${CNB_PLATFORM_API}"
 RUN echo "CNB_STACK_ID: ${CNB_STACK_ID}"
-RUN echo "CNB_USER_ID: ${CNB_USER_ID}"
-RUN echo "CNB_GROUP_ID: ${CNB_GROUP_ID}"
 
 EOF
 
 cat <<EOF > ${output_dir}/run.Dockerfile
-FROM registry.access.redhat.com/ubi8/openjdk-11-runtime:latest
+FROM localhost:5000/run:oztest
 
 EOF
+
+
+echo "Output of build and run Dockerfiles complete"
+ls -al $output_dir
 

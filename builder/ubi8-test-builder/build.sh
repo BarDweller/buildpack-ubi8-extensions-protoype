@@ -18,14 +18,17 @@ description = "ubi8 builder image"
 EOF
 
 cat <<EOF > ${OUTPUT_DIR}/Dockerfile.run-image
-FROM registry.access.redhat.com/ubi8/ubi-minimal:latest as base
+FROM registry.access.redhat.com/ubi8/openjdk-11-runtime:latest as base
 ENV CNB_USER_ID=1000
 ENV CNB_GROUP_ID=1000
 ENV CNB_STACK_ID="${IMG_TAG}"
+ENV CNB_STACK_DESC="ubi java run image base"
 LABEL io.buildpacks.stack.id="${IMG_TAG}"
+USER 0
 RUN microdnf install --setopt=install_weak_deps=0 --setopt=tsflags=nodocs \
   shadow-utils && microdnf clean all && groupadd cnb --gid \${CNB_GROUP_ID} && \
   useradd --uid \${CNB_USER_ID} --gid \${CNB_GROUP_ID} -m -s /bin/bash cnb
+USER 1000
 FROM base as run
 USER \${CNB_USER_ID}:\${CNB_GROUP_ID}
 EOF
@@ -35,6 +38,7 @@ FROM registry.access.redhat.com/ubi8/ubi-minimal:latest as base
 ENV CNB_USER_ID=1000
 ENV CNB_GROUP_ID=1000
 ENV CNB_STACK_ID="${IMG_TAG}"
+ENV CNB_STACK_DESC="ubi common builder base"
 LABEL io.buildpacks.stack.id="${IMG_TAG}"
 RUN microdnf install --setopt=install_weak_deps=0 --setopt=tsflags=nodocs \
   shadow-utils && microdnf clean all && groupadd cnb --gid \${CNB_GROUP_ID} && \

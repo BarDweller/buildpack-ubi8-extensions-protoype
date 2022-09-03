@@ -6,7 +6,7 @@ fi
 
 echo Selected Archive : ${LIFECYCLE_ARCHIVE}
 
-rm -rf lifecyclei-target
+rm -rf lifecycle-target
 mkdir lifecycle-target
 cd lifecycle-target
 tar -xzvf ../${LIFECYCLE_ARCHIVE}
