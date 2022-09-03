@@ -113,7 +113,6 @@ docker run \
   -v $PWD/target/platform/:/platform \
   -v $PWD/target/workspace/:/workspace \
   -v $PWD/target/kaniko/:/kaniko \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   -e CNB_PLATFORM_API=${CNB_PLATFORM_API} \
   --user 0:0 \
   --network host \
@@ -191,7 +190,6 @@ docker run \
   -v $PWD/target/workspace/:/workspace \
   -v $PWD/target/kaniko/:/kaniko \
   -e CNB_PLATFORM_API=${CNB_PLATFORM_API} \
-  -e REGISTRY_HOST=$REGISTRY_HOST \
   --user 0:0 \
   $REGISTRY_HOST/$BUILDER \
   /cnb/lifecycle/extender \
@@ -212,6 +210,7 @@ docker run \
   -v $PWD/target/layers/:/layers \
   -v $PWD/target/platform/:/platform \
   -v $PWD/target/workspace/:/workspace \
+  -e CNB_PLATFORM_API=${CNB_PLATFORM_API} \
   --user 0:0 \
   --network host \
   $REGISTRY_HOST/$BUILDER \
