@@ -1,0 +1,106 @@
+# Copyright 2018-2020 the original author or authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+api = "0.7"
+
+[buildpack]
+  description = "A Cloud Native Buildpack that enables configuration of labels on the created image"
+  homepage = "https://github.com/paketo-buildpacks/image-labels"
+  id = "paketo-buildpacks/image-labels"
+  keywords = ["image-labels", "labels"]
+  name = "Paketo Buildpack for Image Labels"
+  version = "4.3.0"
+  sbom-formats = ["application/vnd.cyclonedx+json", "application/vnd.syft+json"]
+
+  [[buildpack.licenses]]
+    type = "Apache-2.0"
+    uri = "https://github.com/paketo-buildpacks/image-labels/blob/main/LICENSE"
+
+[metadata]
+  include-files = ["LICENSE", "NOTICE", "README.md", "bin/build", "bin/detect", "bin/main", "buildpack.toml"]
+  pre-package = "scripts/build.sh"
+
+  [[metadata.configurations]]
+    build = true
+    description = "arbitrary image labels"
+    name = "BP_IMAGE_LABELS"
+
+  [[metadata.configurations]]
+    build = true
+    description = "the org.opencontainers.image.authors image label"
+    name = "BP_OCI_AUTHORS"
+
+  [[metadata.configurations]]
+    build = true
+    description = "the org.opencontainers.image.created image label"
+    name = "BP_OCI_CREATED"
+
+  [[metadata.configurations]]
+    build = true
+    description = "the org.opencontainers.image.description image label"
+    name = "BP_OCI_DESCRIPTION"
+
+  [[metadata.configurations]]
+    build = true
+    description = "the org.opencontainers.image.documentation image label"
+    name = "BP_OCI_DOCUMENTATION"
+
+  [[metadata.configurations]]
+    build = true
+    description = "the org.opencontainers.image.licenses image label"
+    name = "BP_OCI_LICENSES"
+
+  [[metadata.configurations]]
+    build = true
+    description = "the org.opencontainers.image.ref.name image label"
+    name = "BP_OCI_REF_NAME"
+
+  [[metadata.configurations]]
+    build = true
+    description = "the org.opencontainers.image.revision image label"
+    name = "BP_OCI_REVISION"
+
+  [[metadata.configurations]]
+    build = true
+    description = "the org.opencontainers.image.revision image label"
+    name = "BP_OCI_SOURCE"
+
+  [[metadata.configurations]]
+    build = true
+    description = "the org.opencontainers.image.title image label"
+    name = "BP_OCI_TITLE"
+
+  [[metadata.configurations]]
+    build = true
+    description = "the org.opencontainers.image.url image label"
+    name = "BP_OCI_URL"
+
+  [[metadata.configurations]]
+    build = true
+    description = "the org.opencontainers.image.vendor image label"
+    name = "BP_OCI_VENDOR"
+
+  [[metadata.configurations]]
+    build = true
+    description = "the org.opencontainers.image.version image label"
+    name = "BP_OCI_VERSION"
+
+[[stacks]]
+  id = "io.buildpacks.stacks.bionic"
+
+[[stacks]]
+  id = "io.paketo.stacks.tiny"
+
+[[stacks]]
+  id = "*"

@@ -42,8 +42,7 @@ RUN echo "CNB_STACK_ID: ${CNB_STACK_ID}"
 EOF
 
 cat <<EOF > ${output_dir}/run.Dockerfile
-FROM localhost:5000/run:oztest
-
+FROM localhost:5000/run-java:rundebug8
 EOF
 
 

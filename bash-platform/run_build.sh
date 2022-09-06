@@ -216,6 +216,7 @@ docker run \
   $REGISTRY_HOST/$BUILDER \
   /cnb/lifecycle/exporter \
   -log-level debug \
+  -layers /layers \
   $REGISTRY_HOST/$APPNAME
 
 # Pull the app back from the registry =)
