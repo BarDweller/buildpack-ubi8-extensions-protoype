@@ -21,5 +21,5 @@ A quick bunch of bash scripts to build;
 
 ### Run build with builder image
 - from the project root, `cd bash-platform`
-- `./run_build.sh -b builder:buildername -r localhost:5000 -w ./sample-java-app -a testapp -d info` -b is the builder image to use. -r the registry, -w the workspace to build -a the name for the produced app, and -d the log level.
+- `./run_build.sh -b builder:buildername -r localhost:5000 -w ./sample-springboot-java-app -a testapp -d info` -b is the builder image to use. -r the registry, -w the workspace to build -a the name for the produced app, and -d the log level.
 
