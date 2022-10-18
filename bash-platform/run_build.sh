@@ -65,21 +65,48 @@ RESET="\e[0m"
 
 CNB_PLATFORM_API=0.10
 
-echo -e "$MAGENTA>>>>>>>>>> clearing/creating cache folders...$RESET"
+# Enable experimental stuff
 
-# Currently we flush the entire cache for each build, might make this 
-# into an option, but as the cache name isn't tied to the project being
+CNB_EXPERIMENTAL_MODE=warn
+
+echo -e "$MAGENTA>>>>>>>>>> pulling/interrogating builder image...$RESET"
+
+docker pull $REGISTRY_HOST/$BUILDER
+# Set defaults, for if the builder doesn't set any.
+CNB_GROUP_ID=1001
+CNB_USER_ID=1001
+# Derive id's from the builder env.
+BUILDER_ENV=$(docker inspect --format='{{join .Config.Env "^"}}' $REGISTRY_HOST/$BUILDER)
+OLDIFS=$IFS
+IFS="^"
+for builderenvvar in ${BUILDER_ENV}; do
+  if [[ $builderenvvar =~ ^CNB_GROUP_ID=[0-9]+$ ]]; then 
+    CNB_GROUP_ID=$(echo $builderenvvar | cut -d'=' -f 2)
+  fi
+  if [[ $builderenvvar =~ ^CNB_USER_ID=[0-9]+$ ]]; then 
+    CNB_USER_ID=$(echo $builderenvvar | cut -d'=' -f 2)
+  fi  
+done
+IFS=$OLDIFS
+
+echo "- Using CNB_USER_ID ${CNB_USER_ID}"
+echo "- Using CNB_GROUP_ID ${CNB_GROUP_ID}"
+
+echo -e "$MAGENTA>>>>>>>>>> clearing/creating cache volumes...$RESET"
+
+# Currently we use a new cache for each build, might make this 
+# into an option, but as the cache isn't tied to the project being
 # built, this is the simplest cache management for now.
 
-# Note, it's pretty likely you'll need to sudo rm -rf ./target
-# because kaniko will have vomited a pile of root owned files into the
-# dir that mortals are not allowed to remove.
+docker volume rm -f bashplatform-kaniko
+docker volume rm -f bashplatform-layers
+docker volume rm -f bashplatform-platform
+docker volume rm -f bashplatform-workspace
 
-rm -rf ./target
-mkdir -p ./target
-mkdir -p ./target/layers
-mkdir -p ./target/platform
-mkdir -p ./target/kaniko
+docker volume create bashplatform-kaniko
+docker volume create bashplatform-layers
+docker volume create bashplatform-platform
+docker volume create bashplatform-workspace
 
 echo -e "$MAGENTA>>>>>>>>>> Cleanup old images$RESET"
 
@@ -92,10 +119,21 @@ docker image rm $REGISTRY_HOST/$APPNAME --force
 echo -e "$MAGENTA>>>>>>>>>> Cloning workspace ...$RESET"
 
 # The workspace dir is destructively modified during a build, so we 
-# copy it to a new directory to simulate it being copied into a volume
-# except without the hassle of actually copying it into a volume.
+# copy it into a volume, to avoid the users source being destroyed.
+# We also fix the permissions of the copied project to become the
+# build uid/gid.
 
-cp -rp $WORKSPACE ./target/workspace
+docker run --rm --name bashplatform-temp --privileged -v $PWD/$WORKSPACE:/workspace-orig -v bashplatform-workspace:/workspace alpine sh -c 'cp -r /workspace-orig/. /workspace/'
+docker run --rm --name bashplatform-temp -v bashplatform-workspace:/workspace alpine chown -R ${CNB_USER_ID}:${CNB_GROUP_ID} /workspace
+
+echo -e "$MAGENTA>>>>>>>>>> Fudging kaniko cache permissions ...$RESET"
+
+# So the kaniko volume will need a dir called 'cache' that needs to be writable by the user the restorer
+# step runs as, but by default the mounted volume only has write perms for root. Fix this in advance by
+# adding the cache dir to the volume, and adjusting it's permissions to be be more permissive.
+
+docker run --rm --name bashplatform-temp -v bashplatform-kaniko:/kaniko alpine mkdir -p /kaniko/cache
+docker run --rm --name bashplatform-temp -v bashplatform-kaniko:/kaniko alpine chmod -R 777 /kaniko/cache
 
 echo -e "$MAGENTA>>>>>>>>>> Running analyser...$RESET"
 
@@ -108,13 +146,14 @@ echo -e "$MAGENTA>>>>>>>>>> Running analyser...$RESET"
 # and thus the network host wouldn't be required.
 
 docker run \
-  --privileged \
-  -v $PWD/target/layers/:/layers \
-  -v $PWD/target/platform/:/platform \
-  -v $PWD/target/workspace/:/workspace \
-  -v $PWD/target/kaniko/:/kaniko \
+  --rm \
+  -v bashplatform-kaniko:/kaniko \
+  -v bashplatform-layers:/layers \
+  -v bashplatform-platform:/platform \
+  -v bashplatform-workspace:/workspace \
   -e CNB_PLATFORM_API=${CNB_PLATFORM_API} \
-  --user 0:0 \
+  -e CNB_EXPERIMENTAL_MODE=${CNB_EXPERIMENTAL_MODE} \
+  --user ${CNB_USER_ID}:${CNB_GROUP_ID} \
   --network host \
   $REGISTRY_HOST/$BUILDER \
   /cnb/lifecycle/analyzer \
@@ -131,12 +170,14 @@ echo -e "$MAGENTA>>>>>>>>>> Running detect...$RESET"
 #        is used "<layers>")
 
 docker run \
-  --privileged \
-  -v $PWD/target/layers/:/layers \
-  -v $PWD/target/platform/:/platform \
-  -v $PWD/target/workspace/:/workspace \
+  --rm \
+  -v bashplatform-kaniko:/kaniko \
+  -v bashplatform-layers:/layers \
+  -v bashplatform-platform:/platform \
+  -v bashplatform-workspace:/workspace \
   -e CNB_PLATFORM_API=${CNB_PLATFORM_API} \
-  --user 1000:1000 \
+  -e CNB_EXPERIMENTAL_MODE=${CNB_EXPERIMENTAL_MODE} \
+  --user ${CNB_USER_ID}:${CNB_GROUP_ID} \
   $REGISTRY_HOST/$BUILDER \
   /cnb/lifecycle/detector \
   -layers /layers \
@@ -155,13 +196,14 @@ echo -e "$MAGENTA>>>>>>>>>> Running restore..$RESET"
 # by the extender phase next.
 
 docker run \
-  --privileged \
-  -v $PWD/target/layers/:/layers \
-  -v $PWD/target/platform/:/platform \
-  -v $PWD/target/workspace/:/workspace \
-  -v $PWD/target/kaniko/:/kaniko \
+  --rm \
+  -v bashplatform-kaniko:/kaniko \
+  -v bashplatform-layers:/layers \
+  -v bashplatform-platform:/platform \
+  -v bashplatform-workspace:/workspace \
   -e CNB_PLATFORM_API=${CNB_PLATFORM_API} \
-  --user 1000:1000 \
+  -e CNB_EXPERIMENTAL_MODE=${CNB_EXPERIMENTAL_MODE} \
+  --user ${CNB_USER_ID}:${CNB_GROUP_ID} \
   --network host \
   $REGISTRY_HOST/$BUILDER \
   /cnb/lifecycle/restorer \
@@ -184,19 +226,20 @@ BUILDERHASH=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_HOST/
 # default path encounted during detect phase.
 
 docker run \
-  --privileged \
-  -v $PWD/target/layers/:/layers \
-  -v $PWD/target/platform/:/platform \
-  -v $PWD/target/workspace/:/workspace \
-  -v $PWD/target/kaniko/:/kaniko \
+  --rm \
+  -v bashplatform-kaniko:/kaniko \
+  -v bashplatform-layers:/layers \
+  -v bashplatform-platform:/platform \
+  -v bashplatform-workspace:/workspace \
   -e CNB_PLATFORM_API=${CNB_PLATFORM_API} \
+  -e CNB_EXPERIMENTAL_MODE=${CNB_EXPERIMENTAL_MODE} \
   --user 0:0 \
   $REGISTRY_HOST/$BUILDER \
   /cnb/lifecycle/extender \
   -generated /layers/generated \
   -log-level $DEBUG \
-  -gid 1000 \
-  -uid 1000 \
+  -gid ${CNB_GROUP_ID} \
+  -uid ${CNB_USER_ID} \
   oci:/kaniko/cache/base/$BUILDERHASH
 
 echo -e "$MAGENTA>>>>>>>>>> Exporting final app image...$RESET"
@@ -206,12 +249,14 @@ echo -e "$MAGENTA>>>>>>>>>> Exporting final app image...$RESET"
 # during this test run. 
 
 docker run \
-  --privileged \
-  -v $PWD/target/layers/:/layers \
-  -v $PWD/target/platform/:/platform \
-  -v $PWD/target/workspace/:/workspace \
+  --rm \
+  -v bashplatform-kaniko:/kaniko \
+  -v bashplatform-layers:/layers \
+  -v bashplatform-platform:/platform \
+  -v bashplatform-workspace:/workspace \
   -e CNB_PLATFORM_API=${CNB_PLATFORM_API} \
-  --user 0:0 \
+  -e CNB_EXPERIMENTAL_MODE=${CNB_EXPERIMENTAL_MODE} \
+  --user ${CNB_USER_ID}:${CNB_GROUP_ID} \
   --network host \
   $REGISTRY_HOST/$BUILDER \
   /cnb/lifecycle/exporter \
