@@ -1,0 +1,7 @@
+api = "0.7"
+
+[extension]
+id = "redhat-runtimes/java"
+name = "RedHat Runtimes Java Dependency Extension"
+version = "0.0.1"
+description = "This extension installs the appropriate java runtime via dnf"
