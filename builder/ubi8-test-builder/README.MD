@@ -5,7 +5,7 @@
 ## Overview
 A hack script to produce builder based on a UBI base image, that will use an extension to install Java, and Paketo to build the app.
 
-This approach to creating a build is **NOT RECOMMENDED** but was required during development before the `pack cli` was able to generate builder images with extensions. 
+This approach to creating a build is **NOT RECOMMENDED** but was required during development before the `pack cli` was able to generate builder images with extensions. It is preserved here for reference purposes only.
 
 ## Building
 

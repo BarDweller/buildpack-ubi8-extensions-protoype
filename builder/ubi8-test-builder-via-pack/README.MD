@@ -6,14 +6,18 @@ A simple builder based on a UBI base image, using an extension to install Java, 
 The build process for this builder is using a pre-release version of the pack cli, that must be compiled, via
 the `build.sh` in the `../prototype-pack` directory. 
 
-## Building
+## Prereqs
 
-The builder image will be created with the name `builder` and the tag specified as the first argument, and 
-the resulting image will be pushed to the registry specified as the second argument.
+Using extensions requires use of a docker registry. For the purpose of testing, it is sufficient to use a local docker registry, avoiding credential management challenges for now ;)
 
 You can run a local docker registry with 
 
 `docker run -d -p 5000:5000 --restart=always --name registry registry:2`
+
+## Building
+
+The builder image will be created with the name `builder` and the tag specified as the first argument, and 
+the resulting image will be pushed to the registry specified as the second argument.
 
 The builder image is created using the build script passing the tag & registry as 
 
@@ -41,10 +45,18 @@ To drive the builder via pack, you can use a command similar to this.
 
 ### Bash Platform
 
-The bash platform is a minimal implementation of the buildpacks platform spec, and 
-can be used to drive builds with builder images that use extensions.
+The bash platform is a minimal implementation of the buildpacks platform spec, and can be used to drive builds with builder images that use extensions. It can be useful as it is easy to follow & modify each step if required.
 
-## Documentation
+### Run build with builder image
+- from this folder `cd ../../bash-platform` to switch to the `bash-platform` directory.
+- `./run_build.sh -b builder:testbuilder -r localhost:5000 -w ./sample-springboot-java-app -a testapp -d info` 
+  - -b is the builder image to use. 
+  - -r the registry, 
+  - -w the workspace to build 
+  - -a the name for the produced app
+  - -d the log level.
+
+## Technical Overview
 
 `build.sh` is designed as a self contained script that will:
 - generate the `builder.toml` that will be used by pack

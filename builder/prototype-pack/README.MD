@@ -10,5 +10,11 @@ Once a version of the pack cli is released containing this support, this folder 
 
 You will need the following installed and on the path
 
-- `Go` version >= 1.19 installed and on the path.
-- `git` inst
+- `Go` version >= 1.19
+- `git`
+- `make`
+
+## Building
+
+Invoke the `build.sh` it will pull the pack source, and build the commit that has 
+been tested as working. The resulting binary is created at the path `.\pack\out\pack`. Other scripts will expect to find it there. 

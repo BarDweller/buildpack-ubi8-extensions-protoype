@@ -5,7 +5,12 @@ A quick bunch of bash scripts to build;
  - a builder image with the updated lifecycle, and extension example
  - an app image using the builder image
 
+
 ## Usage
+- Check and follow the README.MD in the `builder\prototype-pack` folder
+- Check and follow the README.MD in the `builder\ubi8-test-builder-via-pack` folder
+
+## Old Usage (no longer required)
 
 ### Generate local lifecycle image
 - Download a lifecycle artifact (lifecyle-linux-x86-64) from a build. 
