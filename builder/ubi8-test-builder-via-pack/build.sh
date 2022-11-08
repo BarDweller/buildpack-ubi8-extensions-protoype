@@ -29,12 +29,20 @@ cat << EOF > ${OUTPUT_DIR}/builder.toml
   uri = "docker://gcr.io/paketo-buildpacks/java:7.7.0"
   version = "7.7.0"
 
+[[buildpacks]]
+  uri = "docker://gcr.io/paketo-buildpacks/nodejs:0.27.0"
+  version = "0.27.0"
+
 # Extensions to include in the builder.. 
 [[extensions]]
     id = "redhat-runtimes/java"
     version = "0.0.1"
     uri = "file://./extensions/redhat-runtimes_java/0.0.1"
 
+[[extensions]]
+    id = "redhat-runtimes/nodejs"
+    version = "0.0.1"
+    uri = "file://./extensions/redhat-runtimes_nodejs/0.0.1"
 
 # Order for extension detection.
 [[order-extensions]]
@@ -42,11 +50,19 @@ cat << EOF > ${OUTPUT_DIR}/builder.toml
     id = "redhat-runtimes/java"
     version = "0.0.1"
 
+  [[order-extensions.group]]
+    id = "redhat-runtimes/nodejs"
+    version = "0.0.1"
+
 # Order for buildpack detection.    
 [[order]]
   [[order.group]]
     id = "paketo-buildpacks/java"
     version = "7.7.0"    
+
+  [[order.group]]
+    id = "paketo-buildpacks/nodejs"
+    version = "0.27.0"
 
 # Override lifecycle version to release candidate with extension support
 [lifecycle]
@@ -140,6 +156,7 @@ docker image rm $REGISTRY_HOST/builder:${IMG_TAG} --force
 # can be generated with the name of the run image we're defining in this script.
 echo -n ">>>>>>>>>> Patching generate script with image tag..."
 sed -i "s#^FROM localhost:5000/run-java:.*#FROM localhost:5000/run-java:${IMG_TAG}#" extensions/redhat-runtimes_java/0.0.1/bin/generate
+sed -i "s#^FROM localhost:5000/run-nodejs:.*#FROM localhost:5000/run-nodejs:${IMG_TAG}#" extensions/redhat-runtimes_nodejs/0.0.1/bin/generate
 
 # Use docker to create the images for builder-base & run. 
 echo ">>>>>>>>>> Building build base image..."
