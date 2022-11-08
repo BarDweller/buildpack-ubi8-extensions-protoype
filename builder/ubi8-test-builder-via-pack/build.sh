@@ -78,6 +78,20 @@ FROM base as run
 USER \${CNB_USER_ID}:\${CNB_GROUP_ID}
 EOF
 
+# Create the dockerfile for the nodejs run image, in this case just
+# ubi8/nodejs-16-minimal with env vars and uid/gid set for use as a CNB run image.
+# This is the image that will be used
+cat <<EOF > ${OUTPUT_DIR}/Dockerfile.run-nodejs-image
+FROM registry.access.redhat.com/ubi8/nodejs-16-minimal as base
+ENV CNB_USER_ID=1000
+ENV CNB_GROUP_ID=1000
+ENV CNB_STACK_ID="${IMG_TAG}"
+ENV CNB_STACK_DESC="ubi nodejs run image base"
+LABEL io.buildpacks.stack.id="${IMG_TAG}"
+FROM base as run
+USER \${CNB_USER_ID}:\${CNB_GROUP_ID}
+EOF
+
 # Create the dockerfile for the base run image, in this case just ubi minimal, with env vars 
 # and uid/gid set for use as a CNB run image.
 cat <<EOF > ${OUTPUT_DIR}/Dockerfile.run-base-image
@@ -119,6 +133,7 @@ echo -n ">>>>>>>>>> Removing old build/run image..."
 docker image rm $REGISTRY_HOST/builder-base:${IMG_TAG} --force
 docker image rm $REGISTRY_HOST/run-base:${IMG_TAG} --force
 docker image rm $REGISTRY_HOST/run-java:${IMG_TAG} --force
+docker image rm $REGISTRY_HOST/run-nodejs:${IMG_TAG} --force
 docker image rm $REGISTRY_HOST/builder:${IMG_TAG} --force
 
 # Patch the java run img tag into the generate script, so the run.Dockerfile
@@ -133,6 +148,8 @@ echo ">>>>>>>>>> Building run base image..."
 docker build . -t $REGISTRY_HOST/run-base:${IMG_TAG} --target run -f ${OUTPUT_DIR}/Dockerfile.run-base-image
 echo ">>>>>>>>>> Building run java image..."
 docker build . -t $REGISTRY_HOST/run-java:${IMG_TAG} --target run -f ${OUTPUT_DIR}/Dockerfile.run-java-image
+echo ">>>>>>>>>> Building run nodejs image..."
+docker build . -t $REGISTRY_HOST/run-nodejs:${IMG_TAG} --target run -f ${OUTPUT_DIR}/Dockerfile.run-nodejs-image
 
 # Use pack to consume the buider-base and output a viable builder image.
 echo ">>>>>>>>>> Pack creating builder image..."
@@ -143,6 +160,7 @@ $PACK builder create $REGISTRY_HOST/builder:${IMG_TAG} --config ${OUTPUT_DIR}/bu
 docker push $REGISTRY_HOST/builder-base:${IMG_TAG}
 docker push $REGISTRY_HOST/run-base:${IMG_TAG}
 docker push $REGISTRY_HOST/run-java:${IMG_TAG}
+docker push $REGISTRY_HOST/run-nodejs:${IMG_TAG}
 docker push $REGISTRY_HOST/builder:${IMG_TAG}
 
 
