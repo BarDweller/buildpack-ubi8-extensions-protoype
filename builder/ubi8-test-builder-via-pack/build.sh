@@ -26,19 +26,10 @@ cat << EOF > ${OUTPUT_DIR}/builder.toml
 # Buildpacks to include in the builder... 
 # Dragging in the entire paketo java meta buildpack
 [[buildpacks]]
-  uri = "docker://gcr.io/paketo-buildpacks/java:7.7.0"
-  version = "7.7.0"
-
-[[buildpacks]]
   uri = "docker://gcr.io/paketo-buildpacks/nodejs:0.27.0"
   version = "0.27.0"
 
 # Extensions to include in the builder.. 
-[[extensions]]
-    id = "redhat-runtimes/java"
-    version = "0.0.1"
-    uri = "file://./extensions/redhat-runtimes_java/0.0.1"
-
 [[extensions]]
     id = "redhat-runtimes/nodejs"
     version = "0.0.1"
@@ -47,19 +38,11 @@ cat << EOF > ${OUTPUT_DIR}/builder.toml
 # Order for extension detection.
 [[order-extensions]]
   [[order-extensions.group]]
-    id = "redhat-runtimes/java"
-    version = "0.0.1"
-
-  [[order-extensions.group]]
     id = "redhat-runtimes/nodejs"
     version = "0.0.1"
 
 # Order for buildpack detection.    
 [[order]]
-  [[order.group]]
-    id = "paketo-buildpacks/java"
-    version = "7.7.0"    
-
   [[order.group]]
     id = "paketo-buildpacks/nodejs"
     version = "0.27.0"
