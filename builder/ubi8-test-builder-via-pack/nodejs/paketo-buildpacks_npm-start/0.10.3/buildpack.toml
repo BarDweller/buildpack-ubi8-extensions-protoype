@@ -1,0 +1,18 @@
+api = "0.7"
+
+[buildpack]
+  homepage = "https://github.com/paketo-buildpacks/npm-start"
+  id = "paketo-buildpacks/npm-start"
+  name = "Paketo Buildpack for NPM Start"
+  version = "0.10.3"
+
+  [[buildpack.licenses]]
+    type = "Apache-2.0"
+    uri = "https://github.com/paketo-buildpacks/npm-start/blob/main/LICENSE"
+
+[metadata]
+  include-files = ["bin/run", "bin/build", "bin/detect", "buildpack.toml"]
+  pre-package = "./scripts/build.sh"
+
+[[stacks]]
+  id = "*"

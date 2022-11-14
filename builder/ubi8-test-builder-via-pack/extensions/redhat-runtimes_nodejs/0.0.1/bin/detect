@@ -18,8 +18,26 @@ if [ -f package.json ]; then
 [[provides]]
 name = "node"
 
-[[provides]]
+[[or]]
+[[or.provides]]
+name = "node"
+[[or.provides]]
+name = "node_modules"
+
+[[or]]
+[[or.provides]]
+name = "node"
+[[or.provides]]
 name = "npm"
+
+[[or]]
+[[or.provides]]
+name = "node"
+[[or.provides]]
+name = "node_modules"
+[[or.provides]]
+name = "npm"
+
 EOF
 
 exit 0

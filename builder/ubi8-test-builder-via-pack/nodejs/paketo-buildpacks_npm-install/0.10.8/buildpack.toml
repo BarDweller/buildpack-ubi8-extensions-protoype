@@ -1,0 +1,19 @@
+api = "0.7"
+
+[buildpack]
+  homepage = "https://github.com/paketo-buildpacks/npm-install"
+  id = "paketo-buildpacks/npm-install"
+  name = "Paketo Buildpack for NPM Install"
+  sbom-formats = ["application/vnd.cyclonedx+json", "application/spdx+json", "application/vnd.syft+json"]
+  version = "0.10.8"
+
+  [[buildpack.licenses]]
+    type = "Apache-2.0"
+    uri = "https://github.com/paketo-buildpacks/npm-install/blob/main/LICENSE"
+
+[metadata]
+  include-files = ["bin/build", "bin/detect", "bin/run", "bin/setup-symlinks", "buildpack.toml"]
+  pre-package = "./scripts/build.sh"
+
+[[stacks]]
+  id = "*"

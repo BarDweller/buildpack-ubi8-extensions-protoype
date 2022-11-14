@@ -7,6 +7,10 @@ env_dir=${platform_dir}/env
 output_dir=$1
 plan_path=$3
 
+# Patched by build.sh with correct values
+CNB_USER_ID=1000
+CNB_GROUP_ID=1000
+
 echo '****************************'
 echo 'extension build env vars!!'
 echo "CNB_PLATFORM_API: $CNB_PLATFORM_API"
@@ -14,6 +18,10 @@ echo "CNB_STACK_ID: $CNB_STACK_ID"
 echo "CNB_USER_ID: $CNB_USER_ID"
 echo "CNB_GROUP_ID: $CNB_GROUP_ID"
 echo '****************************'
+echo 'extension plan...'
+cat $3
+echo '****************************'
+
 
 # TODO .. read engines from package.json to selec
 #         appropriate rpm
@@ -35,12 +43,19 @@ RUN echo \${build_id}
 
 RUN microdnf -y module enable nodejs:${NODEJS_VERSION}
 RUN microdnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y ${PACKAGES} && microdnf clean all
+
+RUN echo uid:gid "${CNB_USER_ID}:${CNB_GROUP_ID}"
+USER ${CNB_USER_ID}:${CNB_GROUP_ID}
+RUN npm install  yarn
+
 RUN echo "CNB_STACK_ID: ${CNB_STACK_ID}"
 
 EOF
 
+
+# Patched by build.sh with correct image name
 cat <<EOF > ${output_dir}/run.Dockerfile
-FROM localhost:5000/run-nodejs:packbuilderoz5
+FROM localhost:5000/run-nodejs:io.buildpacks.stacks.bionic
 EOF
 
 
