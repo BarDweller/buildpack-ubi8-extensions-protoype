@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+plan_path=$2
+
+echo "Java Extension detect, with plan path ${plan_path}"
+
+#DOC: Here, we need to know if we should supply a jdk/jre etc.. 
+#     we have to do the project determination here, because we run before
+#     any buildpack detect will.. and we need to say what we will 'provide'
+#
+#     For now, we'll just look for hallmarks of a java project, and if found
+#     claim we will 'provide' a jdk/jre
+
+if [ -f pom.xml -o -f build.gradle -o -f mvnw -o -f gradlew ]; then
+  echo "Java Extension adding to build plan"
+
+cat >> "${plan_path}" <<EOF
+[[provides]]
+name = "jdk"
+
+[[provides]]
+name = "jre"
+EOF
+
+# detect when java detected
+exit 0
+fi
+
+# Fail detect
+exit 100
+

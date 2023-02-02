@@ -1,0 +1,11 @@
+FROM registry.access.redhat.com/ubi8/nodejs-16-minimal as base
+
+ENV CNB_USER_ID=1001 \
+    CNB_GROUP_ID=0 \
+    CNB_STACK_ID="${IMG_TAG}" \
+    CNB_STACK_DESC="ubi nodejs run image base"
+
+LABEL io.buildpacks.stack.id="${IMG_TAG}"
+
+FROM base as run
+USER 1001

@@ -1,0 +1,11 @@
+FROM registry.access.redhat.com/ubi8/openjdk-11-runtime:latest as base
+
+ENV CNB_USER_ID=185 \
+    CNB_GROUP_ID=185 \
+    CNB_STACK_ID="${IMG_TAG}" \
+    CNB_STACK_DESC="ubi java run image base"
+
+LABEL io.buildpacks.stack.id="${IMG_TAG}"
+
+FROM base as run
+USER jboss

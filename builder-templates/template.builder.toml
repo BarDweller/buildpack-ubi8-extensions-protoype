@@ -1,0 +1,50 @@
+# Buildpacks to include in the builder... 
+# Dragging in the entire paketo java meta buildpack
+[[buildpacks]]
+  uri = "docker://gcr.io/paketo-buildpacks/java:8.8.0"
+  version = "8.8.0"
+
+[[buildpacks]]
+  uri = "docker://gcr.io/paketo-buildpacks/nodejs:1.1.0"
+  version = "1.1.0"  
+
+# Extensions to include in the builder.. 
+[[extensions]]
+    id = "redhat-runtimes/java"
+    version = "0.0.1"
+    uri = "file://./extensions/redhat-runtimes_java/0.0.1"
+
+# Extensions to include in the builder.. 
+[[extensions]]
+    id = "redhat-runtimes/nodejs"
+    version = "0.0.1"
+    uri = "file://./extensions/redhat-runtimes_nodejs/0.0.1"
+
+# Order for extension detection.
+[[order-extensions]]
+  [[order-extensions.group]]
+    id = "redhat-runtimes/java"
+    version = "0.0.1"
+  [[order-extensions.group]]
+    id = "redhat-runtimes/nodejs"
+    version = "0.0.1"    
+
+# Order for buildpack detection.    
+[[order]]
+  [[order.group]]
+    id = "paketo-buildpacks/java"
+    version = "8.8.0"
+[[order]]
+  [[order.group]]
+    id = "paketo-buildpacks/nodejs"
+    version = "1.1.0"      
+
+# Override lifecycle version to release candidate with extension support
+[lifecycle]
+  uri = "https://github.com/buildpacks/lifecycle/releases/download/v0.15.3/lifecycle-v0.15.3+linux.x86-64.tgz"
+
+# Define the stack
+[stack]
+  id = "${IMG_TAG}"
+  build-image = "${REGISTRY_HOST}/builder-base:${IMG_TAG}"
+  run-image = "${REGISTRY_HOST}/run-stack:${IMG_TAG}"

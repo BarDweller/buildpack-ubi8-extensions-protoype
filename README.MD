@@ -1,30 +1,54 @@
-# Lifecycle test project
+# UBI8 Builder Image
 
-A quick bunch of bash scripts to build;
- - an image containing a lifecycle
- - a builder image with the updated lifecycle, and extension example
- - an app image using the builder image
+## Overview
+A simple builder based on a UBI base image, using an extension to install Java, and Paketo to build the app.
 
+## Prereqs
+
+Using extensions requires use of a docker registry. For the purpose of testing, it is sufficient to use a local docker registry, avoiding credential management challenges for now ;)
+
+You can run a local docker registry with 
+
+`docker run -d -p 5000:5000 --restart=always --name registry registry:2`
+
+## Building
+
+The builder image will be created with the name `builder` and the tag specified as the first argument, and 
+the resulting image will be pushed to the registry specified as the second argument.
+
+The builder image is created using the build script passing the tag & registry as 
+
+`./build.sh <buildertag> <registry>`
+
+eg, 
+
+`/build.sh testbuilder localhost:5000`
 
 ## Usage
-- Check and follow the README.MD in the `builder\prototype-pack` folder
-- Check and follow the README.MD in the `builder\ubi8-test-builder-via-pack` folder
 
-## Old Usage (no longer required)
+To drive the builder via pack, you can use a command similar to this.
 
-### Generate local lifecycle image
-- Download a lifecycle artifact (lifecyle-linux-x86-64) from a build. 
-- Unzip it to obtain the .tgz file `lifecycle-v*.x86-64.tgz`
-- Plase the .tgz archive into `lifecycle-archives`
-- `cd lifecycle-archives`
-- `./make-lifecycle-image.sh` (or `LIFECYCLE_ARCHIVE=filename ./make-lifecycle-image.sh` to select tgz manually)
+`./build-artifacts/bin/pack build testapp --builder localhost:5000/builder:testbuilder --path test-applications/sample-springboot-java-app --network host -v`
 
-### Generate local builder image
-- from the project root, `cd builder/<buildername>`
-- run `./build.sh nameforbuilder localhost:5000 lifecycle:local-latest` (1st arg is used in the tag to identify the images built, 2nd arg is registry to push to, last arg is id of lifeycle image to update lifecyle from)
-- builder image is published as `builder:nameforbuilder`
+- `--builder` to reference the builder created above
+- `--path` to point at a folder with a project to be built 
+- `--network` host if you are using a registry at localhost 
+  _(because otherwise when the build process attempts to access the registry at 'localhost' inside its container, it will fail as localhost is different in that context)_
+- `-v` to enable verbose output, in case it fails to have some context =)
 
-### Run build with builder image
-- from the project root, `cd bash-platform`
-- `./run_build.sh -b builder:buildername -r localhost:5000 -w ./sample-springboot-java-app -a testapp -d info` -b is the builder image to use. -r the registry, -w the workspace to build -a the name for the produced app, and -d the log level.
+
+## Technical Overview
+
+`build.sh` is designed as a self contained script that will:
+- generate from a template, the `builder.toml` that will be used by pack, and the dockerfiles for the builder base image, minimal run image, and nodejs & java run images
+  - Templates are used to patch in the image names (derived from the image tag script argument) into appropriate places.
+- patch the `generate` script in the contained extensions to reference the appropriate run images
+- use `docker` to create images from the generated dockerfiles
+- use the `pack` cli to generate a builder image containing the extensions and associated paketo buildpacks
+- push all the images to a registry.
+
+
+## Notes
+
+If you are looking for the bash-platform implementation that used to be within this repo, it has moved to https://github.com/BarDweller/buildpack-platform-bash
 
